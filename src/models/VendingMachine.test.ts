@@ -39,7 +39,11 @@ describe("VendingMachine", () => {
         .drinks.find((d) => d.name === "Coke")?.quantity;
       const initialCoins = vendingMachine.getInventory().coins;
 
-      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, 20); // Coke is 10 PHP
+      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, {
+        totalPayment: 20,
+        coins: 20,
+        cash: 10,
+      }); // Coke is 10 PHP
       expect(result.success).toBe(true);
       expect(result.message).toBe(
         `You purchased Coke from slot ${VENDING_MACHINE_SLOTS.A1}. Your change is 10 PHP.`
@@ -57,7 +61,11 @@ describe("VendingMachine", () => {
     });
 
     it("should return failure if drink slot not found", () => {
-      const result = vendingMachine.buyDrink("Z9" as any, 10); // Invalid slot
+      const result = vendingMachine.buyDrink("Z9" as any, {
+        totalPayment: 10,
+        coins: 10,
+        cash: 0,
+      }); // Invalid slot
       expect(result.success).toBe(false);
       expect(result.message).toBe("Drink not found.");
       expect(result.change).toBe(10); // Payment is returned as change
@@ -70,14 +78,22 @@ describe("VendingMachine", () => {
         .drinks.find((d) => d.name === "Coke");
       if (coke) coke.quantity = 0; // Directly manipulate for test setup
 
-      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, 10);
+      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, {
+        totalPayment: 10,
+        coins: 10,
+        cash: 0,
+      });
       expect(result.success).toBe(false);
       expect(result.message).toContain("is out of stock");
       expect(result.change).toBe(10);
     });
 
     it("should return failure if payment is not enough", () => {
-      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, 5); // Coke is 10 PHP
+      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, {
+        totalPayment: 5,
+        coins: 5,
+        cash: 0,
+      }); // Coke is 10 PHP
       expect(result.success).toBe(false);
       expect(result.message).toContain("Payment is not enough");
       expect(result.change).toBe(5);
@@ -88,7 +104,11 @@ describe("VendingMachine", () => {
       vendingMachine["coins"] = 0; // Access private property for test setup (less ideal but effective for in-memory)
       vendingMachine["cash"] = 5; // Total balance 5
 
-      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, 50); // Buy Coke (10 PHP), needs 40 PHP change
+      const result = vendingMachine.buyDrink(VENDING_MACHINE_SLOTS.A1, {
+        totalPayment: 50,
+        coins: 0,
+        cash: 50,
+      }); // Buy Coke (10 PHP), needs 40 PHP change
       expect(result.success).toBe(false);
       expect(result.message).toContain("not have enough change");
       expect(result.change).toBe(50); // Full payment returned

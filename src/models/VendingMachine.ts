@@ -87,7 +87,11 @@ export class VendingMachine {
    */
   public buyDrink(
     slot: VendingMachineSlot,
-    paymentAmount: number
+    payment: {
+      totalPayment: number;
+      coins: number;
+      cash: number;
+    }
   ): {
     success: boolean;
     message: string;
@@ -95,6 +99,7 @@ export class VendingMachine {
     purchasedDrink?: DrinkData;
   } {
     const drink = this.drinks.get(slot);
+    const paymentAmount = payment.totalPayment;
 
     if (!drink) {
       return {
@@ -133,7 +138,8 @@ export class VendingMachine {
 
     // Process sale
     drink.decreaseQuantity(); // Decrement stock
-    this.coins += paymentAmount;
+    this.coins += payment.coins;
+    this.cash += payment.cash;
     this.coins -= change; // Dispense change from coins
 
     return {

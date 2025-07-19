@@ -39,12 +39,12 @@ router.post(
   validateSlot,
   validatePaymentAmount,
   (req: Request, res: Response) => {
-    const { slot, paymentAmount } = req.body;
+    const { slot, payment } = req.body;
 
     try {
       const result = vendingMachineInstance.buyDrink(
         slot as VendingMachineSlot,
-        paymentAmount
+        payment
       );
       if (result.success) {
         res.status(200).json(result);

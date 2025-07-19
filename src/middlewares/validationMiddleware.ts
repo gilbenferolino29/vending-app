@@ -44,9 +44,9 @@ export const validatePaymentAmount = (
   res: Response,
   next: NextFunction
 ) => {
-  const { paymentAmount } = req.body;
+  const { payment } = req.body;
 
-  if (typeof paymentAmount !== "number" || paymentAmount <= 0) {
+  if (typeof payment.totalPayment !== "number" || payment.totalPayment <= 0) {
     return res.status(400).json({
       success: false,
       message: "Valid payment amount (positive number) is required.",
