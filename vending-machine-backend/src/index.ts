@@ -14,6 +14,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Vending Machine Backend is running!');
 });
 
+app.use('/api', vendingMachineRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
