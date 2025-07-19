@@ -1,13 +1,17 @@
 // src/models/VendingMachine.ts
-import { Drink, DrinkData } from './Drink';
+import {
+  VENDING_MACHINE_SLOTS,
+  VendingMachineSlot,
+} from "../constants/vendingMachineSlots";
+import { Drink, DrinkData } from "./Drink";
 
 /**
  * Manages the state and operations of the vending machine.
  */
 export class VendingMachine {
-  private drinks: Map<string, Drink>; // Stores drinks, keyed by name for quick lookup
+  private drinks: Map<VendingMachineSlot, Drink>; // Stores drinks, keyed by slot for quick lookup
   private coins: number; // Total PHP from coins
-  private cash: number;  // Total PHP from cash
+  private cash: number; // Total PHP from cash
 
   // Constants for refill logic
   private static readonly MAX_STOCK_PER_DRINK = 10;
@@ -17,18 +21,23 @@ export class VendingMachine {
    * Creates an instance of VendingMachine with initial inventory and balance.
    */
   constructor() {
-    this.drinks = new Map<string, Drink>();
+    this.drinks = new Map<VendingMachineSlot, Drink>();
     this.coins = 0;
     this.cash = 0;
 
     // Initialize products and starting inventory as per assignment
-    this.addDrink(new Drink('Coke', 10, 10));
-    this.addDrink(new Drink('Pepsi', 25, 10));
-    this.addDrink(new Drink('Dew', 30, 10));
+    this.addDrink(new Drink("Coke", 10, 10, VENDING_MACHINE_SLOTS.A1));
+    this.addDrink(new Drink("Pepsi", 25, 10, VENDING_MACHINE_SLOTS.A2));
+    this.addDrink(new Drink("Dew", 30, 10, VENDING_MACHINE_SLOTS.B1));
+    this.addDrink(new Drink("Sprite", 20, 10, VENDING_MACHINE_SLOTS.B2));
+    this.addDrink(new Drink("Fanta", 15, 10, VENDING_MACHINE_SLOTS.C1));
+    this.addDrink(new Drink("Dr. Pepper", 35, 10, VENDING_MACHINE_SLOTS.C2));
+    this.addDrink(new Drink("Mountain Dew", 30, 10, VENDING_MACHINE_SLOTS.D1));
+    this.addDrink(new Drink("Root Beer", 25, 10, VENDING_MACHINE_SLOTS.D2));
 
     // Initial Balance
     this.addCoins(100); // 1 coin = 1 PHP
-    this.addCash(200);  // PHP 200
+    this.addCash(200); // PHP 200
   }
 
   /**
@@ -37,7 +46,7 @@ export class VendingMachine {
    * @param drink The Drink object to add.
    */
   private addDrink(drink: Drink): void {
-    this.drinks.set(drink.name, drink);
+    this.drinks.set(drink.slot, drink);
   }
 
   /**
@@ -62,7 +71,7 @@ export class VendingMachine {
    * Retrieves the current inventory (drinks, coins, cash).
    * @returns An object containing current drink stock and machine balance.
    */
-  public getInventory(): { drinks: Drink[], coins: number, cash: number } {
+  public getInventory(): { drinks: Drink[]; coins: number; cash: number } {
     return {
       drinks: Array.from(this.drinks.values()), // Convert Map values to an array
       coins: this.coins,
@@ -72,21 +81,41 @@ export class VendingMachine {
 
   /**
    * Processes a drink purchase.
-   * @param drinkName The name of the drink to buy.
+   * @param slot The slot of the drink to buy.
    * @param paymentAmount The total payment amount (coins + cash).
    * @returns An object with transaction details: { success: boolean, message: string, change: number, purchasedDrink?: Drink }
    */
-  public buyDrink(drinkName: string, paymentAmount: number): { success: boolean, message: string, change: number, purchasedDrink?: DrinkData } {
-    const drink = this.drinks.get(drinkName);
+  public buyDrink(
+    slot: VendingMachineSlot,
+    paymentAmount: number
+  ): {
+    success: boolean;
+    message: string;
+    change: number;
+    purchasedDrink?: DrinkData;
+  } {
+    const drink = this.drinks.get(slot);
 
     if (!drink) {
-      return { success: false, message: 'Drink not found.', change: paymentAmount };
+      return {
+        success: false,
+        message: "Drink not found.",
+        change: paymentAmount,
+      };
     }
     if (drink.quantity === 0) {
-      return { success: false, message: `${drink.name} is out of stock.`, change: paymentAmount };
+      return {
+        success: false,
+        message: `${drink.name} is out of stock.`,
+        change: paymentAmount,
+      };
     }
     if (paymentAmount < drink.price) {
-      return { success: false, message: `Payment is not enough. Price: ${drink.price} PHP. Paid: ${paymentAmount} PHP.`, change: paymentAmount };
+      return {
+        success: false,
+        message: `Payment is not enough. Price: ${drink.price} PHP. Paid: ${paymentAmount} PHP.`,
+        change: paymentAmount,
+      };
     }
 
     const change = paymentAmount - drink.price;
@@ -95,43 +124,47 @@ export class VendingMachine {
     // In this simplified model, we assume 1 coin = 1 PHP and cash is also in PHP.
     // So total machine balance is simply coins + cash.
     if (this.coins + this.cash < change) {
-      return { success: false, message: `Vending machine does not have enough change. Please use exact amount or smaller denominations.`, change: paymentAmount };
+      return {
+        success: false,
+        message: `Vending machine does not have enough change. Please use exact amount or smaller denominations.`,
+        change: paymentAmount,
+      };
     }
 
     // Process sale
     drink.decreaseQuantity(); // Decrement stock
-    this.coins += paymentAmount; // For simplicity, assume all payment goes to coins for easier change calculation.
-                                // In a real scenario, you'd distinguish between coins and cash received.
-                                // The assignment states "Add cash/coins to the machine"
-                                // We'll add it to `coins` for simple balance tracking for now.
-                                // If specific coin/cash handling is needed, this part would be more complex.
+    this.coins += paymentAmount;
     this.coins -= change; // Dispense change from coins
-
-    // In a real system, you'd likely have a method to calculate optimal change using available denominations.
-    // For this assignment, assuming 1 coin = 1 PHP simplifies change greatly.
 
     return {
       success: true,
       message: `You purchased ${drink.name}. Your change is ${change} PHP.`,
       change: change,
-      purchasedDrink: { ...drink, quantity: drink.quantity + 1 } // Return the drink details before quantity decreased for display
+      purchasedDrink: { ...drink, quantity: drink.quantity + 1 }, // Return the drink details before quantity decreased for display
     };
   }
 
   /**
    * Refills the stock of a specific drink.
-   * @param drinkName The name of the drink to refill.
+   * @param slot The name of the drink to refill.
    * @returns An object with refill details: { success: boolean, message: string, newQuantity?: number }
    */
-  public refillDrink(drinkName: string): { success: boolean, message: string, newQuantity?: number } {
-    const drink = this.drinks.get(drinkName);
+  public refillDrink(slot: VendingMachineSlot): {
+    success: boolean;
+    message: string;
+    newQuantity?: number;
+  } {
+    const drink = this.drinks.get(slot);
 
     if (!drink) {
-      return { success: false, message: 'Drink not found.' };
+      return { success: false, message: "Drink not found." };
     }
 
     if (drink.quantity > VendingMachine.REFILL_THRESHOLD) {
-      return { success: false, message: `${drink.name} current stock (${drink.quantity}) is above refill threshold (${VendingMachine.REFILL_THRESHOLD}).` };
+      return {
+        success: false,
+        message: `${drink.name} current stock (${drink.quantity}) is above refill threshold (${VendingMachine.REFILL_THRESHOLD}).`,
+      };
     }
 
     // Calculate how much to add to reach MAX_STOCK_PER_DRINK
@@ -154,9 +187,15 @@ export class VendingMachine {
     this.coins = 0;
     this.cash = 0;
 
-    this.addDrink(new Drink('Coke', 10, 10));
-    this.addDrink(new Drink('Pepsi', 25, 10));
-    this.addDrink(new Drink('Dew', 30, 10));
+    // Re-initialize using constants
+    this.addDrink(new Drink("Coke", 10, 10, VENDING_MACHINE_SLOTS.A1));
+    this.addDrink(new Drink("Pepsi", 25, 10, VENDING_MACHINE_SLOTS.A2));
+    this.addDrink(new Drink("Dew", 30, 10, VENDING_MACHINE_SLOTS.B1));
+    this.addDrink(new Drink("Sprite", 20, 10, VENDING_MACHINE_SLOTS.B2));
+    this.addDrink(new Drink("Fanta", 15, 10, VENDING_MACHINE_SLOTS.C1));
+    this.addDrink(new Drink("Dr. Pepper", 35, 10, VENDING_MACHINE_SLOTS.C2));
+    this.addDrink(new Drink("Mountain Dew", 30, 10, VENDING_MACHINE_SLOTS.D1));
+    this.addDrink(new Drink("Root Beer", 25, 10, VENDING_MACHINE_SLOTS.D2));
 
     this.addCoins(100);
     this.addCash(200);
