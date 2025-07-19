@@ -7,14 +7,23 @@ import {
 } from "../middlewares/validationMiddleware";
 
 // This instance will be shared across all requests handled by this router.
-const vendingMachine = new VendingMachine();
-
+let vendingMachineInstance = new VendingMachine();
 const router = Router();
+
+// For Testing
+// A function to get the current vending machine instance
+export const getVendingMachineInstance = () => vendingMachineInstance;
+
+// A function to reset the vending machine instance for testing
+export const resetVendingMachineInstance = () => {
+  vendingMachineInstance = new VendingMachine();
+  vendingMachineInstance.reset(); // Call the reset method
+};
 
 // GET /inventory - View current stock of drinks and machine balance
 router.get("/inventory", (req: Request, res: Response) => {
   try {
-    const inventory = vendingMachine.getInventory();
+    const inventory = vendingMachineInstance.getInventory();
     res.status(200).json(inventory);
   } catch (error: any) {
     console.error("Error fetching inventory:", error);
@@ -33,7 +42,7 @@ router.post(
     const { slot, paymentAmount } = req.body;
 
     try {
-      const result = vendingMachine.buyDrink(
+      const result = vendingMachineInstance.buyDrink(
         slot as VendingMachineSlot,
         paymentAmount
       );
@@ -58,7 +67,9 @@ router.post("/refill", validateSlot, (req: Request, res: Response) => {
   const { slot } = req.body;
 
   try {
-    const result = vendingMachine.refillDrink(slot as VendingMachineSlot);
+    const result = vendingMachineInstance.refillDrink(
+      slot as VendingMachineSlot
+    );
     if (result.success) {
       res.status(200).json(result);
     } else {

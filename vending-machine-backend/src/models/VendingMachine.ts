@@ -138,7 +138,7 @@ export class VendingMachine {
 
     return {
       success: true,
-      message: `You purchased ${drink.name}. Your change is ${change} PHP.`,
+      message: `You purchased ${drink.name} from slot ${slot}. Your change is ${change} PHP.`,
       change: change,
       purchasedDrink: { ...drink, quantity: drink.quantity + 1 }, // Return the drink details before quantity decreased for display
     };
@@ -173,7 +173,7 @@ export class VendingMachine {
 
     return {
       success: true,
-      message: `${drink.name} refilled. New quantity: ${drink.quantity}.`,
+      message: `${drink.name} (Slot: ${slot}) refilled. New quantity: ${drink.quantity}.`,
       newQuantity: drink.quantity,
     };
   }

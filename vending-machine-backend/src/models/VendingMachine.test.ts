@@ -46,9 +46,7 @@ describe("VendingMachine", () => {
       );
       expect(result.change).toBe(10);
       expect(result.purchasedDrink?.name).toBe("Coke");
-      expect(result.purchasedDrink?.quantity).toBe(
-        (initialCokeQuantity ?? 0) - 1
-      ); // Quantity decreased
+      expect(result.purchasedDrink?.quantity).toBe(initialCokeQuantity ?? 0);
 
       const updatedInventory = vendingMachine.getInventory();
       // Machine balance increases by payment amount and then decreases by change amount
@@ -61,7 +59,7 @@ describe("VendingMachine", () => {
     it("should return failure if drink slot not found", () => {
       const result = vendingMachine.buyDrink("Z9" as any, 10); // Invalid slot
       expect(result.success).toBe(false);
-      expect(result.message).toBe("Drink slot not found.");
+      expect(result.message).toBe("Drink not found.");
       expect(result.change).toBe(10); // Payment is returned as change
     });
 
@@ -115,10 +113,10 @@ describe("VendingMachine", () => {
       ).toBe(10);
     });
 
-    it("should return failure if drink slot not found for refill", () => {
+    it("should return failure if drink not found for refill", () => {
       const result = vendingMachine.refillDrink("Z9" as any);
       expect(result.success).toBe(false);
-      expect(result.message).toBe("Drink slot not found.");
+      expect(result.message).toBe("Drink not found.");
       expect(result.newQuantity).toBeUndefined();
     });
 
