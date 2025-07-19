@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
+
 import vendingMachineRoutes from "./routes/vendingMachineRoutes";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,11 +30,4 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
-}
-function cors(arg0: {
-  origin: string; // Allows requests from any origin (e.g., any domain or port)
-  methods: string[];
-  allowedHeaders: string[];
-}): any {
-  throw new Error("Function not implemented.");
 }
