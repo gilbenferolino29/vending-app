@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import { VendingMachine } from "./models/VendingMachine";
 import vendingMachineRoutes from "./routes/vendingMachineRoutes";
 
 const app = express();
@@ -12,6 +11,14 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Vending Machine Backend is running!");
 });
 
+app.use(
+  cors({
+    origin: "*", // Allows requests from any origin (e.g., any domain or port)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use("/api", vendingMachineRoutes);
 
 // Export the app instance for testing purposes
@@ -21,4 +28,11 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+}
+function cors(arg0: {
+  origin: string; // Allows requests from any origin (e.g., any domain or port)
+  methods: string[];
+  allowedHeaders: string[];
+}): any {
+  throw new Error("Function not implemented.");
 }
