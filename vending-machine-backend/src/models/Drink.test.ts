@@ -33,4 +33,48 @@ describe("Drink", () => {
     // This runtime check is for when JS code might bypass TS types (e.g., from external input)
     expect(() => new Drink("Soda", 15, 5, "Z9" as any)).toThrow(/Invalid slot/);
   });
+
+  describe("decreaseQuantity", () => {
+    it("should decrease quantity by 1 by default", () => {
+      const drink = new Drink("Coke", 10, 5, validSlot);
+      const success = drink.decreaseQuantity();
+      expect(success).toBe(true);
+      expect(drink.quantity).toBe(4);
+    });
+
+    it("should decrease quantity by specified amount", () => {
+      const drink = new Drink("Coke", 10, 5, validSlot);
+      const success = drink.decreaseQuantity(3);
+      expect(success).toBe(true);
+      expect(drink.quantity).toBe(2);
+    });
+
+    it("should not decrease quantity if not enough stock", () => {
+      const drink = new Drink("Coke", 10, 2, validSlot);
+      const success = drink.decreaseQuantity(3);
+      expect(success).toBe(false);
+      expect(drink.quantity).toBe(2); // Quantity remains unchanged
+    });
+
+    it("should return false if quantity would go below zero", () => {
+      const drink = new Drink("Coke", 10, 0, validSlot);
+      const success = drink.decreaseQuantity();
+      expect(success).toBe(false);
+      expect(drink.quantity).toBe(0);
+    });
+  });
+
+  describe("increaseQuantity", () => {
+    it("should increase quantity by 1 by default", () => {
+      const drink = new Drink("Pepsi", 20, 5, validSlot);
+      drink.increaseQuantity();
+      expect(drink.quantity).toBe(6);
+    });
+
+    it("should increase quantity by specified amount", () => {
+      const drink = new Drink("Pepsi", 20, 5, validSlot);
+      drink.increaseQuantity(5);
+      expect(drink.quantity).toBe(10);
+    });
+  });
 });
